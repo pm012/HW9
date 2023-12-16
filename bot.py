@@ -4,15 +4,24 @@ phone_book = dict()
 # Decorator implementation
 # handling errors
 def input_error(func):
-    def inner(*args, **kwargs):
+    def inner(*args):
         try:
-            return func(*args, **kwargs)
-        except KeyError:
-            return "Enter user name"
-        except ValueError:
-            return "Give me name and phone, please"
-        except IndexError:
-            return "Invalid command. Type 'help' for a list of commands."
+            return func(*args)
+        except KeyError as e:
+            if str(e)=='':
+                return "Provide a usernmae"
+            else:
+                return str(e)
+        except ValueError as e:
+            if str(e)=="Invalid parameters":
+                return "Unable to update. Incorrect usename. Use add <name> <phone> to add a new user"
+            else:
+                return str(e)
+        except IndexError as e:
+            if str(e)=='list index out of range':
+                return "Provide name and phone"
+            else:
+                return str(e)
        
     return inner
 
@@ -24,26 +33,31 @@ def answer_greeting():
 
 # Add contact to the data base (command: add)
 @input_error
-def set_contact(name:str, phone:str)->str:
-    phone_book[name] = phone
-    return f"Contact {name} {phone} is added to DBMS"
+def set_contact(*args)->str:    
+    if args[0][1] in phone_book:
+        raise ValueError(f"Contact with such name ({args[0][1]}) already exists. You should use 'change' command to ammend it")
+    else:
+        phone_book[args[0][1]] = args[0][2]
+        return f"Contact {args[0][1]} {args[0][2]} is added to DBMS"
 
 # Update phone for existing contact by its name (command: change)
 @input_error
-def update_phone(name:str, phone:str)->str:
-    if name in phone_book:
-        phone_book[name]= phone
-        return f"Contact {name} phone number is changed to {phone}"
+def update_phone(*args)->str:    
+    if args[0][1] in phone_book:
+        phone_book[args[0][1]]= args[0][2]
+        return f"Contact {args[0][1]} phone number is changed to {args[0][2]}"
     else:
-        return f"Contact {name} is not found!"
+        raise ValueError(f"Contact {args[0][1]} is not found!")
 
 # Get contact phone by name (command: phone)
 @input_error
-def get_phone(name:str)->str:
-    if name in phone_book:
-        return f" The contact {name} has phone number: {phone_book[name]}"
+def get_phone(*args)->str:
+    if len(args)<=1:
+        raise ValueError(f"Please, provide name for this command")
+    if args[0][1] in phone_book:
+        return f" The contact {args[0][1]} has phone number: {phone_book[args[0][1]]}"
     else:
-        return f"Contact {name} not found"
+        raise KeyError(f"No contact with name {args[0][1]}")
 
 # Print all contacts in the data base (command: show all)
 def display():
@@ -60,11 +74,9 @@ def display():
 def quit_bot():
     quit()
 
-# Hendler function
-@input_error
+# Handler function
 def get_handler(command):    
-    return COMMANDS[command]
-
+    return COMMANDS[command] 
 
 
 COMMANDS = {
@@ -92,16 +104,16 @@ def main():
             case 'hello':
                 print(get_handler(commands[0])())
             case 'add':
-                print(get_handler(commands[0])(commands[1], commands[2]))
+                print(get_handler(commands[0])(commands))
             case 'change':
-                print(get_handler(commands[0])(commands[1], commands[2]))
+                print(get_handler(commands[0])(commands))
             case 'phone':
-                print(get_handler(commands[0])(commands[1]))
+                print(get_handler(commands[0])(commands))
             case 'show':
                 if commands[1]=='all':
                     print(get_handler(f"{commands[0]} {commands[1]}")())
             case _:
-                print("Invalid parameters")
+                print("Incorrect command, please provide the command from the list in command prompt")
         
 
 if __name__ == '__main__':
