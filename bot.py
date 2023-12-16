@@ -11,7 +11,7 @@ def input_error(func):
             if str(e)=='':
                 return "Provide a usernmae"
             else:
-                return str(e)
+                return f"No contact with name = {str(e)}"
         except ValueError as e:
             if str(e)=="Invalid parameters":
                 return "Unable to update. Incorrect usename. Use add <name> <phone> to add a new user"
@@ -33,31 +33,26 @@ def answer_greeting():
 
 # Add contact to the data base (command: add)
 @input_error
-def set_contact(*args)->str:    
-    if args[0][1] in phone_book:
-        raise ValueError(f"Contact with such name ({args[0][1]}) already exists. You should use 'change' command to ammend it")
+def set_contact(commands)->str:    
+    if commands[1] in phone_book:
+        raise ValueError(f"Contact with such name ({commands[1]}) already exists. You should use 'change' command to ammend it")
     else:
-        phone_book[args[0][1]] = args[0][2]
-        return f"Contact {args[0][1]} {args[0][2]} is added to DBMS"
+        phone_book[commands[1]] = commands[2]
+        return f"Contact {commands[1]} {commands[2]} is added to DBMS"
 
 # Update phone for existing contact by its name (command: change)
 @input_error
-def update_phone(*args)->str:    
-    if args[0][1] in phone_book:
-        phone_book[args[0][1]]= args[0][2]
-        return f"Contact {args[0][1]} phone number is changed to {args[0][2]}"
+def update_phone(commands)->str:    
+    if commands[1] in phone_book:
+        phone_book[commands[1]]= commands[2]
+        return f"Contact {commands[1]} phone number is changed to {commands[2]}"
     else:
-        raise ValueError(f"Contact {args[0][1]} is not found!")
+        raise ValueError(f"Contact {commands[1]} is not found!")
 
 # Get contact phone by name (command: phone)
 @input_error
-def get_phone(*args)->str:
-    if len(args)<=1:
-        raise ValueError(f"Please, provide name for this command")
-    if args[0][1] in phone_book:
-        return f" The contact {args[0][1]} has phone number: {phone_book[args[0][1]]}"
-    else:
-        raise KeyError(f"No contact with name {args[0][1]}")
+def get_phone(commands)->str:
+    return f" The contact {commands[1]} has phone number: {phone_book[commands[1]]}"
 
 # Print all contacts in the data base (command: show all)
 def display():
@@ -90,11 +85,13 @@ COMMANDS = {
 
 
 
-
 def main():
     exit_cmds = ["good bye", "close", "exit"]
     while True:
         commands = input("Enter a command(hello, add, change, phone, show all, exit or [good bye, close]) from the list above: ").split(' ')
+        if len(commands)>0: 
+            commands[0]=commands[0].lower()
+        print(commands[0])
         if commands[0] in exit_cmds:
             commands[0]='exit'
         match commands[0]:
@@ -103,15 +100,15 @@ def main():
                 get_handler(commands[0])()
             case 'hello':
                 print(get_handler(commands[0])())
-            case 'add':
-                print(get_handler(commands[0])(commands))
-            case 'change':
-                print(get_handler(commands[0])(commands))
-            case 'phone':
-                print(get_handler(commands[0])(commands))
+            case 'add' | 'change' | 'phone':
+                print(get_handler(commands[0])(commands))            
             case 'show':
-                if commands[1]=='all':
-                    print(get_handler(f"{commands[0]} {commands[1]}")())
+                show_all = " ".join(commands).lower()
+                if show_all == 'show all':
+                    print(get_handler(f"{show_all}")())
+                else:
+                    print("Incorrect <show all> command. Please, re-enter.")
+
             case _:
                 print("Incorrect command, please provide the command from the list in command prompt")
         
