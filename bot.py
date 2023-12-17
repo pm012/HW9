@@ -88,12 +88,13 @@ COMMANDS = {
 def main():
     exit_cmds = ["good bye", "close", "exit"]
     while True:
-        commands = input("Enter a command(hello, add, change, phone, show all, exit or [good bye, close]) from the list above: ").split(' ')
+        commands = list()
+        prop = input("Enter a command(hello, add, change, phone, show all, exit or [good bye, close]) from the list above: ")
+        if prop.lower() in exit_cmds:
+            prop = 'exit'
+        commands = prop.split(' ')
         if len(commands)>0: 
             commands[0]=commands[0].lower()
-        print(commands[0])
-        if commands[0] in exit_cmds:
-            commands[0]='exit'
         match commands[0]:
             case 'exit':
                 print("Good bye!")
